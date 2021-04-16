@@ -13,6 +13,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
+from GrahamsScan import GrahamsScan
+
 
 
 
@@ -34,10 +36,15 @@ r = PCA_3(df)
 #r['fig_pca'].show()
 vec_save(r['pca'], 'out.vec')
 # pprint(r)
-
-
-
 visualize_3d(r['pca'])
+
+
+#Graham's Scan
+r = PCA_2(df)
+points = r["pca"]
+graham = GrahamsScan(points)
+convex_hull = graham.run()
+graham.ch_plot_show(convex_hull, "graham")
 
 
 
