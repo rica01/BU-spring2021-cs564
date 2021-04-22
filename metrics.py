@@ -1,24 +1,6 @@
 import numpy as np
-from dna2vec import *
 
 characters = ['A', 'C', 'G', 'T', '*']
-
-read_length = 5
-reads = []
-reads_2 = []
-
-reads.append('AAAAG')
-reads.append('AAACG')
-reads.append('AAAGG')
-reads.append('TAAAG')
-
-reads_2.append('AAAAG')
-reads_2.append('AAACG')
-reads_2.append('AAAGG')
-reads_2.append('TAAAG')
-
-reads = np.array(reads)
-reads_2 = np.array(reads_2)
 
 def encode(character):
     if character == 'A' or character == 'a':
@@ -113,6 +95,24 @@ def ch_str_distance(str_reads_1, str_reads_2, read_length):
 
 
 '''
+read_length = 5
+reads = []
+reads_2 = []
+
+reads.append('AAAAG')
+reads.append('AAACG')
+reads.append('AAAGG')
+reads.append('TAAAG')
+
+reads_2.append('AAAAG')
+reads_2.append('AAACG')
+reads_2.append('AAAGG')
+reads_2.append('TAAAG')
+
+reads = np.array(reads)
+reads_2 = np.array(reads_2)
+
+
 ch_str_1 = calc_ch_str(reads, read_length, reads.shape[0])
 ch_str_2 = calc_ch_str(reads_2, read_length, reads_2.shape[0])
 ch_str_dist = ch_str_distance(ch_str_1, ch_str_2, read_length)
@@ -134,4 +134,5 @@ print("ahd =", ahd)
 
 adp = avg_distance_pops(freqs, freqs_2, read_length, reads.shape[0])
 print("adp =", adp)
+
 '''
