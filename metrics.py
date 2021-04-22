@@ -21,10 +21,14 @@ reads = np.array(reads)
 reads_2 = np.array(reads_2)
 
 def encode(character):
-    if character == 'A': return 0
-    elif character == 'C': return 1
-    elif character == 'G': return 2
-    elif character == 'T': return 3
+    if character == 'A' or character == 'a':
+        return 0
+    elif character == 'C' or character == 'c':
+        return 1
+    elif character == 'G' or character == 'g':
+        return 2
+    elif character == 'T' or character == 't':
+        return 3
     else: return 4
 
 
@@ -42,7 +46,7 @@ def calc_ch_str(reads, read_length, num_reads):
     return ch_str
 
 
-def frequency(reads, read_lenth):
+def frequency(reads, read_length):
     freq = np.zeros([read_length, len(characters)])
     
     counts = np.zeros([len(characters)])
@@ -107,6 +111,8 @@ def ch_str_distance(str_reads_1, str_reads_2, read_length):
     return ch_str_dist
 
 
+
+'''
 ch_str_1 = calc_ch_str(reads, read_length, reads.shape[0])
 ch_str_2 = calc_ch_str(reads_2, read_length, reads_2.shape[0])
 ch_str_dist = ch_str_distance(ch_str_1, ch_str_2, read_length)
@@ -128,3 +134,4 @@ print("ahd =", ahd)
 
 adp = avg_distance_pops(freqs, freqs_2, read_length, reads.shape[0])
 print("adp =", adp)
+'''
