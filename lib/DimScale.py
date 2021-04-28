@@ -1,5 +1,4 @@
 #! python3
-# pip install plotly numpy scipy sklearn
 
 import plotly.express as px
 import numpy as np

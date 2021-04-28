@@ -1,12 +1,13 @@
 #! python3
-# pip install plo
 
+import sys
+sys.path.insert(0, '../lib')
+from dna2vec import *
+from DimScale import *
 import plotly.express as px
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
-from DimScale import *
-from dna2vec import *
 from pprint import pprint
 from scipy.spatial import ConvexHull, convex_hull_plot_2d
 import matplotlib.pyplot as plt
