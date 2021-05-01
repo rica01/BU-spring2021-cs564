@@ -93,6 +93,12 @@ def ch_str_distance(str_reads_1, str_reads_2, read_length):
     return ch_str_dist
 
 
+def euclidean_dist(x1, y1, x2, y2):
+    x = x1 - x2
+    y = y1 - y2
+    return ((x ** 2) + (y ** 2)) ** (1/2)
+
+
 
 '''
 read_length = 5

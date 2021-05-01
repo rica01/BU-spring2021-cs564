@@ -15,23 +15,24 @@ class GrahamsScan:
     def getSize(self):
         print("delete is", self.delete.shape[0])
 
-    def ch_plot_show(self, ch_set, filename):
-        plt.plot(self.points[:, 0], self.points[:, 1], 'o')
+    # color format = '_o-'
+    def ch_plot(self, ch_set, filename, color):
+        #plt.plot(self.points[:, 0], self.points[:, 1], 'o')
         n = ch_set.shape[0]
         for i in range(0, n-1):
             x = [ch_set[i][0], ch_set[i+1][0]]
             y = [ch_set[i][1], ch_set[i+1][1]]
-            plt.plot(x, y, 'ro-')
+            plt.plot(x, y, color)
             #print(ch_set[i:i+2][0], ch_set[i:i+2][1])
 
         # Last line connecting index 0 to n-1
         x = [ch_set[0][0], ch_set[n-1][0]]
         y = [ch_set[0][1], ch_set[n-1][1]]
         #print(x, y)
-        plt.plot(x, y, 'ro-')
+        plt.plot(x, y, color)
 
-        plt.savefig(filename)
-        plt.show()
+        #plt.savefig(filename)
+        #plt.show()
 
 
     def plot_show_save(self, points, filename):
