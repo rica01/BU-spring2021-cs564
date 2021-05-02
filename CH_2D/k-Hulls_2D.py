@@ -58,8 +58,8 @@ class KHulls:
         memberships[seeds[1]] = seeds[1]
 
         if (self.k > 2): # didn't check this part, be cautious!
-            i = 3
-            while i <= self.k:
+            i = 2
+            while i+1 <= self.k:
                 max_geo_mean = 1
                 max_geo_mean_id = 0
 
@@ -70,7 +70,7 @@ class KHulls:
                         while seeds[z] != -1:
                             temp_geo = temp_geo * ch_str_distance(self.reads[seeds[z]], self.reads[t], read_length)
                             z = z + 1
-                        temp_geo = temp_geo ** (1/(i-1))
+                        temp_geo = temp_geo ** (1/i)
                         if temp_geo > max_geo_mean:
                             max_geo_mean = temp_geo
                             max_geo_mean_id = t
@@ -144,12 +144,10 @@ class KHulls:
             i = i + 1
         x = x / convex_hull.shape[0]
         y = y / convex_hull.shape[0]
-
         plt.plot(x, y, 'rx') # red-x = mean of polygon coordinates
 
         # calculating centroid of polygon
         polygon = Polygon(convex_hull)
-        print(polygon.centroid)
         plt.plot(polygon.centroid.x, polygon.centroid.y, 'bx') # blue-x = centroid
 
         # finding seeds distant to centroid
@@ -172,14 +170,40 @@ class KHulls:
                 if (max_distance < temp_dist):
                     max_distance = temp_dist
                     seeds[1] = i
-
+        
         memberships[seeds[0]] = seeds[0]
         memberships[seeds[1]] = seeds[1]
+        
+        # Additional seeds for k > 2
+        if (self.k > 2):  # didn't check this part, be cautious!
+            i = 2
+            while i+1 <= self.k:
+                max_geo_mean = 1
+                max_geo_mean_id = 0
+
+                for t in range(0, num_reads):
+                    if memberships[t] == -1:
+                        z = 0
+                        temp_geo = 1
+                        while seeds[z] != -1:
+                            temp_geo = temp_geo * euclidean_dist(self.points[seeds[z]][0], self.points[seeds[z]][1], self.points[t][0], self.points[t][1])
+                            z = z + 1
+                        temp_geo = temp_geo ** (1/i)
+                        if temp_geo > max_geo_mean:
+                            max_geo_mean = temp_geo
+                            max_geo_mean_id = t
+
+                seeds[i] = max_geo_mean_id
+                memberships[seeds[i]] = seeds[i]
+                i = i + 1
 
         #print("first seed = ", seeds[0], self.points[seeds[0]])
         #print("second seed = ", seeds[1], self.points[seeds[1]])
+        #print("seeds", seeds)
+        #print(memberships)
 
-        while True: #TODO: some memberships remain -1, fix it
+        # Clustering 
+        while True: 
             change = 0
             for i in range(0, num_reads):
                 min_dist = euclidean_dist(
@@ -203,7 +227,7 @@ class KHulls:
 
         print(memberships)
 
-        #partitioning the point set
+        #Partitioning the point set
         subpoints = []
         for i in range(0, self.k):
             subpoints.append([])
@@ -216,8 +240,8 @@ class KHulls:
                 j = j + 1
         
         
-        # Forming individual convex hulls --> TODO: define color palette for k > 2
-        colors = ['co-', 'mo-', 'yo-']
+        # Forming individual convex hulls --> TODO: define color palette for k > 4
+        colors = ['co-', 'mo-', 'yo-', 'ko-']
         for i in range(0, self.k):
             subpoints[i] = np.array(subpoints[i])
             temp_graham = GrahamsScan(subpoints[i])
@@ -226,11 +250,12 @@ class KHulls:
             temp_graham.ch_plot(temp_convex_hull, filename, colors[i])
 
 
-        #plt.plot(self.points[:, 0], self.points[:, 1], 'o')
+        # Plotting
         plt.scatter(self.points[:, 0], self.points[:, 1],
-                    c=memberships, s=50, cmap='viridis')
-        plt.plot(self.points[seeds[0]][0], self.points[seeds[0]][1], 'cx')
-        plt.plot(self.points[seeds[1]][0], self.points[seeds[1]][1], 'mx')
+                    c=memberships, s=20, cmap='viridis')
+        #plt.plot(self.points[seeds[0]][0], self.points[seeds[0]][1], 'cx')
+        #plt.plot(self.points[seeds[1]][0], self.points[seeds[1]][1], 'mx')
+        #plt.plot(self.points[seeds[2]][0], self.points[seeds[2]][1], 'rx')
         plt.show()
 
         # TODO: approaches to try for possible biological meaning:
@@ -256,13 +281,12 @@ def main():
     reads = np.array(reads)
     r = PCA_2(df_encodings)
     points = r["pca"]
-
     #print(reads)
 
     clusters = []
-    khulls = KHulls(3, clusters, points, reads)
+    khulls = KHulls(2, clusters, points, reads)
+    
     #khulls.run_str_based()
-
     khulls.run_CH_based()
 
 
