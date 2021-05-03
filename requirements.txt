@@ -4,3 +4,4 @@ plo
 matplotlib
 plotly
 sklearn
+shapely

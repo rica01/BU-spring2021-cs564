@@ -5,11 +5,24 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Python: FAS",
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            // "args": ["${workspaceFolder}/data/sample_high_firsts.txt"]
+            "args": ["${workspaceFolder}/data/4C_0.50_8.fas"]
+        },
+        {
+            "name": "Python: TXT",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            "args": ["${workspaceFolder}/data/sample_high_firsts.txt"]
+            // "args": ["${workspaceFolder}/data/4C_0.50_8.fas"]
         }
     ]
 }
