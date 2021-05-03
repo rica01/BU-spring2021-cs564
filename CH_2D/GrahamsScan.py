@@ -99,9 +99,8 @@ class GrahamsScan:
         area = (b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1])
         return area
 
+    
     # Left: Code 1.6 : O'Rourke (p29)
-
-
     def Left(self, a, b, c):
         return self.calc_area(a, b, c) > 0
 

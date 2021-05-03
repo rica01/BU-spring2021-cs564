@@ -157,12 +157,12 @@ class KHulls:
             i = i + 1
         x = x / convex_hull.shape[0]
         y = y / convex_hull.shape[0]
-        plt.plot(x, y, 'rx')  # red-x = mean of polygon coordinates
+        plt.plot(x, y, 'rx')  # blue-x = mean of polygon coordinates
 
         # calculating centroid of polygon
         polygon = Polygon(convex_hull)
         plt.plot(polygon.centroid.x, polygon.centroid.y,
-                 'bx')  # blue-x = centroid
+                 'bx')  # red-x = centroid
 
         # finding seeds distant to polygon centroid
         max_distance = euclidean_dist(
@@ -270,9 +270,11 @@ class KHulls:
         #for i, txt in enumerate(labels):
            #plt.annotate(txt, (self.points[i][0], self.points[i][1]))
 
-        #plt.plot(self.points[seeds[0]][0], self.points[seeds[0]][1], 'cx')
-        #plt.plot(self.points[seeds[1]][0], self.points[seeds[1]][1], 'mx')
-        #plt.plot(self.points[seeds[2]][0], self.points[seeds[2]][1], 'rx')
+        #plt.plot(self.points[seeds[0]][0], self.points[seeds[0]][1], 'r*')
+        #plt.plot(self.points[seeds[1]][0], self.points[seeds[1]][1], 'r*')
+        #plt.plot(self.points[seeds[2]][0], self.points[seeds[2]][1], 'r*')
+        #plt.plot(self.points[seeds[3]][0], self.points[seeds[3]][1], 'r*')
+
         plt.show()
 
         # TODO: approaches to try for possible biological meaning:
@@ -380,8 +382,8 @@ def main():
 
     '''
    
-    #reads, labels = get_HC_reads(data_file)
-    reads, labels = get_sim_reads(data_file)
+    reads, labels = get_HC_reads(data_file)
+    #reads, labels = get_sim_reads(data_file)
     encodings = []
 
     for i in range(len(reads)):
