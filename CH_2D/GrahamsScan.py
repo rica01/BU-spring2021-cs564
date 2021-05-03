@@ -140,23 +140,25 @@ class GrahamsScan:
 
         stack = []
         stack.append(convex_set[0])
-        stack.append(convex_set[1])
-        i = 2
-        while (i < convex_set.shape[0]):
 
-            if (len(stack)-2 < 0):  # top -> next may be undefined, this part is not in the original text
-                stack.append(convex_set[i])
-                i = i + 1
-                continue
+        if convex_set.shape[0] > 1:
+            stack.append(convex_set[1])
+            i = 2
+            while (i < convex_set.shape[0]):
 
-            p1 = stack[len(stack)-2]  # top -> next
-            p2 = stack[len(stack)-1]  # top
+                if (len(stack)-2 < 0):  # top -> next may be undefined, this part is not in the original text
+                    stack.append(convex_set[i])
+                    i = i + 1
+                    continue
 
-            if (self.Left(p1, p2, convex_set[i]) > 0):
-                stack.append(convex_set[i])
-                i = i + 1
-            else:
-                stack.pop()
+                p1 = stack[len(stack)-2]  # top -> next
+                p2 = stack[len(stack)-1]  # top
+
+                if (self.Left(p1, p2, convex_set[i]) > 0):
+                    stack.append(convex_set[i])
+                    i = i + 1
+                else:
+                    stack.pop()
 
         convex_hull = np.array(stack)
         return convex_hull

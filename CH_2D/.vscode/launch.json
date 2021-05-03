@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["../data/sample_high_firsts.txt"]
+            "args": ["../data/4C_0.50_8.fas"]
         }
     ]
 }

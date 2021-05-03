@@ -1,4 +1,3 @@
-from scipy.spatial import ConvexHull, convex_hull_plot_2d
 import sys
 sys.path.insert(0, '../lib')
 
@@ -11,7 +10,6 @@ from GrahamsScan import GrahamsScan
 import pandas as pd
 import numpy as np
 from shapely.geometry import Polygon
-
 
 
 
@@ -130,6 +128,15 @@ class KHulls:
         plt.plot(self.points[seeds[1]][0], self.points[seeds[1]][1], 'rx')
         plt.show()
 
+    def color_labels(self, labels):
+        l_colors = {'A': 'tab:blue', 'B': 'green',
+                    'K': 'blue', 'V': 'yellow', 'L': 'tab.orange', 'P': 'tab:olive'}
+        
+        for label in np.unique(labels):
+            cond = np.where(label)
+            plt.plot(self.points[cond][0], self.points[cond][1], c=l_colors[label], label=label, s=20)
+
+
     def run_CH_based(self, labels):
         read_length = len(self.reads[0])
         num_reads = self.reads.shape[0]
@@ -138,7 +145,7 @@ class KHulls:
 
         graham_all = GrahamsScan(self.points)
         convex_hull = graham_all.run()
-        
+        #graham_all.ch_plot(convex_hull, "0_convex_hull", 'k-.')
 
         # Calculating mean of polygon coordinates
         i = 0
@@ -207,7 +214,7 @@ class KHulls:
                 i = i + 1
 
         #print("seeds", seeds)
-        # print(memberships)
+        #print(memberships)
 
         # Clustering
         while True:
@@ -233,7 +240,7 @@ class KHulls:
                 break
 
         print(memberships)
-        self.memberships = memberships
+        self.memberships = np.array(memberships)
 
         # Partitioning the point set
         subpoints = []
@@ -247,7 +254,7 @@ class KHulls:
                     subpoints[j].append(self.points[i])
                 j = j + 1
 
-        # Forming individual convex hulls --> TODO: define color palette for k > 4
+        # Forming individual convex hulls --> TODO: define color palette for k > 6
         colors = ['c-', 'm-', 'y-', 'k-', 'r-', 'b-']
         for i in range(0, self.k):
             subpoints[i] = np.array(subpoints[i])
@@ -256,11 +263,9 @@ class KHulls:
             filename = "ch_" + str(i)
             temp_graham.ch_plot(temp_convex_hull, filename, colors[i])
 
-        # Plotting
-
-        plt.scatter(self.points[:, 0], self.points[:, 1],
-                    c=memberships, s=20, cmap='viridis')
-        
+        # Plotting 
+        #self.color_labels(labels)
+        plt.scatter(self.points[:, 0], self.points[:, 1], c=memberships, s=20, cmap='viridis')
         # annotating the points
         #for i, txt in enumerate(labels):
            #plt.annotate(txt, (self.points[i][0], self.points[i][1]))
@@ -268,13 +273,27 @@ class KHulls:
         #plt.plot(self.points[seeds[0]][0], self.points[seeds[0]][1], 'cx')
         #plt.plot(self.points[seeds[1]][0], self.points[seeds[1]][1], 'mx')
         #plt.plot(self.points[seeds[2]][0], self.points[seeds[2]][1], 'rx')
-        plt.legend()
         plt.show()
 
         # TODO: approaches to try for possible biological meaning:
         # - use closeness_centrality instead of centroid
         # - incorporate hamming distance in proximity calculations
         # -
+
+
+def get_sim_reads(inputfile):
+    file1 = open(inputfile, 'r')
+    lines = file1.readlines()
+
+    labels = []
+    reads = []
+    count = 0
+    for line in lines:
+        if count % 2 == 1:
+            reads.append(line.strip())
+        count += 1
+
+    return reads, labels
 
 
 # Returns the lists of reads and labels.
@@ -361,29 +380,20 @@ def main():
 
     '''
    
-    reads, labels = get_HC_reads(data_file)
+    #reads, labels = get_HC_reads(data_file)
+    reads, labels = get_sim_reads(data_file)
     encodings = []
 
     for i in range(len(reads)):
         encodings.append(dna2vec(reads[i]))
 
     df_encodings = pd.DataFrame(encodings)
-    
-    
     r = PCA_2(df_encodings)
     points = r["pca"]
     memberships = []
     reads = np.array(reads)
-    khulls = KHulls(6, memberships, points, reads)
+    khulls = KHulls(4, memberships, points, reads)
     khulls.run_CH_based(labels)
-    
-
-    '''
-    r = PCA_3(df_encodings)
-    vec_save(r['pca'], 'out.vec')
-    ch3d = ConvexHull(r["pca"])
-    visualize_ch3d(ch3d, r["pca"])
-    '''
    
 
 if __name__ == "__main__":
