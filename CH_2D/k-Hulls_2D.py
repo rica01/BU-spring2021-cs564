@@ -1,28 +1,29 @@
-from shapely.geometry import Polygon
+from scipy.spatial import ConvexHull, convex_hull_plot_2d
 import sys
 sys.path.insert(0, '../lib')
 
-
-import numpy as np
-import pandas as pd
-from GrahamsScan import GrahamsScan
-from metrics import *
-
-
-import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
-from DimScale import *
 from dna2vec import *
+from DimScale import *
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+from metrics import *
+from GrahamsScan import GrahamsScan
+import pandas as pd
+import numpy as np
+from shapely.geometry import Polygon
+
+
+
 
 
 class KHulls:
 
     def __init__(self, k, C, points, reads):
-        self.k = k  #number of clusters
-        self.clusters = C #cluster memberships 
+        self.k = k  # number of clusters
+        self.memberships = C
         self.points = points
         self.reads = reads
-    
+
     def set_k(k):
         self.k = k
 
@@ -31,20 +32,20 @@ class KHulls:
         num_reads = self.reads.shape[0]
         memberships = np.full(num_reads, -1)
         seeds = np.full(self.k, -1)
-        
+
         ch_str = calc_ch_str(self.reads, read_length, num_reads)
         freqs = frequency(self.reads, read_length)
-        
+
         # closeness centrality of sequences
         min_cc = closeness_centrality(freqs, read_length, self.reads[0])
-        seeds[0] = 0 #first seed
+        seeds[0] = 0  # first seed
         for i in range(1, num_reads):
             cc = closeness_centrality(freqs, read_length, self.reads[i])
             if cc < min_cc:
                 min_cc = cc
                 seeds[0] = i
-        
-        seeds[1] = 0 # second seed
+
+        seeds[1] = 0  # second seed
         ch_str_dist = 0
         for i in range(0, num_reads):
             if i != seeds[0]:
@@ -57,7 +58,7 @@ class KHulls:
         memberships[seeds[0]] = seeds[0]
         memberships[seeds[1]] = seeds[1]
 
-        if (self.k > 2): # didn't check this part, be cautious!
+        if (self.k > 2):  # didn't check this part, be cautious!
             i = 2
             while i+1 <= self.k:
                 max_geo_mean = 1
@@ -68,7 +69,9 @@ class KHulls:
                         z = 0
                         temp_geo = 1
                         while seeds[z] != -1:
-                            temp_geo = temp_geo * ch_str_distance(self.reads[seeds[z]], self.reads[t], read_length)
+                            temp_geo = temp_geo * \
+                                ch_str_distance(
+                                    self.reads[seeds[z]], self.reads[t], read_length)
                             z = z + 1
                         temp_geo = temp_geo ** (1/i)
                         if temp_geo > max_geo_mean:
@@ -78,9 +81,9 @@ class KHulls:
                 seeds[i] = max_geo_mean_id
                 memberships[seeds[i]] = seeds[i]
                 i = i + 1
-        
+
         print(memberships)
-       
+
         while True:
             change = 0
             for i in range(0, num_reads):
@@ -88,19 +91,20 @@ class KHulls:
                 min_dist = read_length+1
                 min_dist_id = memberships[i]
                 while (j < self.k):
-                    ch_str_dist = ch_str_distance(self.reads[i], self.reads[seeds[j]], read_length)
+                    ch_str_dist = ch_str_distance(
+                        self.reads[i], self.reads[seeds[j]], read_length)
                     if ch_str_dist < min_dist:
                         min_dist = ch_str_dist
                         min_dist_id = seeds[j]
                     j = j + 1
-                
+
                 if memberships[i] != min_dist_id:
                     memberships[i] = min_dist_id
                     change = 1
-            
+
             if change == 0:
                 break
-        
+
         print(memberships)
 
         print("ch_str = ", ch_str)
@@ -119,20 +123,22 @@ class KHulls:
             self.points[seeds[1]][0], self.points[seeds[1]][1], c='black', s=200, alpha=0.5)
         '''
 
-        plt.scatter(self.points[:, 0], self.points[:, 1], c=memberships, s=50, cmap='viridis')
+        plt.scatter(self.points[:, 0], self.points[:, 1],
+                    c=memberships, s=50, cmap='viridis')
         #plt.plot(self.points[:, 0], self.points[:, 1], 'o')
         plt.plot(self.points[seeds[0]][0], self.points[seeds[0]][1], 'ro')
         plt.plot(self.points[seeds[1]][0], self.points[seeds[1]][1], 'rx')
         plt.show()
 
-    def run_CH_based(self):
+    def run_CH_based(self, labels):
         read_length = len(self.reads[0])
         num_reads = self.reads.shape[0]
         memberships = np.full(num_reads, -1)
-        seeds = np.full(self.k, -1) # contains ID's of seeds in points array
+        seeds = np.full(self.k, -1)  # contains ID's of seeds in points array
 
         graham_all = GrahamsScan(self.points)
         convex_hull = graham_all.run()
+        
 
         # Calculating mean of polygon coordinates
         i = 0
@@ -144,13 +150,14 @@ class KHulls:
             i = i + 1
         x = x / convex_hull.shape[0]
         y = y / convex_hull.shape[0]
-        plt.plot(x, y, 'rx') # red-x = mean of polygon coordinates
+        plt.plot(x, y, 'rx')  # red-x = mean of polygon coordinates
 
         # calculating centroid of polygon
         polygon = Polygon(convex_hull)
-        plt.plot(polygon.centroid.x, polygon.centroid.y, 'bx') # blue-x = centroid
+        plt.plot(polygon.centroid.x, polygon.centroid.y,
+                 'bx')  # blue-x = centroid
 
-        # finding seeds distant to centroid
+        # finding seeds distant to polygon centroid
         max_distance = euclidean_dist(
             polygon.centroid.x, polygon.centroid.y, self.points[0][0], self.points[0][1])
         seeds[0] = 0  # first seed
@@ -170,10 +177,10 @@ class KHulls:
                 if (max_distance < temp_dist):
                     max_distance = temp_dist
                     seeds[1] = i
-        
+
         memberships[seeds[0]] = seeds[0]
         memberships[seeds[1]] = seeds[1]
-        
+
         # Additional seeds for k > 2
         if (self.k > 2):  # didn't check this part, be cautious!
             i = 2
@@ -186,7 +193,9 @@ class KHulls:
                         z = 0
                         temp_geo = 1
                         while seeds[z] != -1:
-                            temp_geo = temp_geo * euclidean_dist(self.points[seeds[z]][0], self.points[seeds[z]][1], self.points[t][0], self.points[t][1])
+                            temp_geo = temp_geo * \
+                                euclidean_dist(
+                                    self.points[seeds[z]][0], self.points[seeds[z]][1], self.points[t][0], self.points[t][1])
                             z = z + 1
                         temp_geo = temp_geo ** (1/i)
                         if temp_geo > max_geo_mean:
@@ -197,13 +206,11 @@ class KHulls:
                 memberships[seeds[i]] = seeds[i]
                 i = i + 1
 
-        #print("first seed = ", seeds[0], self.points[seeds[0]])
-        #print("second seed = ", seeds[1], self.points[seeds[1]])
         #print("seeds", seeds)
-        #print(memberships)
+        # print(memberships)
 
-        # Clustering 
-        while True: 
+        # Clustering
+        while True:
             change = 0
             for i in range(0, num_reads):
                 min_dist = euclidean_dist(
@@ -226,8 +233,9 @@ class KHulls:
                 break
 
         print(memberships)
+        self.memberships = memberships
 
-        #Partitioning the point set
+        # Partitioning the point set
         subpoints = []
         for i in range(0, self.k):
             subpoints.append([])
@@ -238,10 +246,9 @@ class KHulls:
                 if memberships[i] == seeds[j]:
                     subpoints[j].append(self.points[i])
                 j = j + 1
-        
-        
+
         # Forming individual convex hulls --> TODO: define color palette for k > 4
-        colors = ['co-', 'mo-', 'yo-', 'ko-']
+        colors = ['c-', 'm-', 'y-', 'k-', 'r-', 'b-']
         for i in range(0, self.k):
             subpoints[i] = np.array(subpoints[i])
             temp_graham = GrahamsScan(subpoints[i])
@@ -249,28 +256,91 @@ class KHulls:
             filename = "ch_" + str(i)
             temp_graham.ch_plot(temp_convex_hull, filename, colors[i])
 
-
         # Plotting
+
         plt.scatter(self.points[:, 0], self.points[:, 1],
                     c=memberships, s=20, cmap='viridis')
+        
+        # annotating the points
+        #for i, txt in enumerate(labels):
+           #plt.annotate(txt, (self.points[i][0], self.points[i][1]))
+
         #plt.plot(self.points[seeds[0]][0], self.points[seeds[0]][1], 'cx')
         #plt.plot(self.points[seeds[1]][0], self.points[seeds[1]][1], 'mx')
         #plt.plot(self.points[seeds[2]][0], self.points[seeds[2]][1], 'rx')
+        plt.legend()
         plt.show()
 
         # TODO: approaches to try for possible biological meaning:
         # - use closeness_centrality instead of centroid
         # - incorporate hamming distance in proximity calculations
-        # - 
+        # -
 
-       
+
+# Returns the lists of reads and labels.
+# dataset-specific for Hepatitis C data from David Campo 
+def get_HC_reads(inputfile):
+    file1 = open(inputfile, 'r')
+    lines = file1.readlines()
+    
+    reads = []
+    labels = []
+
+    read_length = -1
+    count = 0
+    read = ""
+    for line in lines:
+        if count == 0:
+            label = line.strip()
+            labels.append(label[1])
+        elif count <= 4:
+            subread = line.strip()
+            read = read + subread
+            #print("'", read, "'--", read[0], "--")
+            if count == 4:
+                if read_length == -1:
+                    read_length = len(read)
+                    reads.append(read)
+                elif len(read) == read_length:
+                    reads.append(read)
+                else:
+                    labels.pop(1)
+                read = ""
+                count = -1
+        count += 1
+    
+    return reads, labels
+
 
 def main():
 
+    data_file = sys.argv[1]
+
+    '''
     reads = []
+    
+    reads.append("AAAAACCCC")
+    reads.append("ACAAACCCC")
+    reads.append("AGAAACCCC")
+    reads.append("ATAAACCCC")
+
+    reads.append("AAAAAGGGG")
+    reads.append("ACAAAGGGG")
+    reads.append("AGAAAGGGG")
+    reads.append("ATAAAGGGG")
+
+    reads.append("AAAAATTTT")
+    reads.append("ACAAATTTT")
+    reads.append("AGAAATTTT")
+    reads.append("ATAAATTTT")
+    '''
+
+    '''
+
     encodings = []
-    read_length = 10
+    read_length = 9
     num_reads = 100
+    tags = ['C', 'C', 'C', 'C', 'G', 'G', 'G', 'G', 'T', 'T', 'T', 'T']
 
     for i in range(num_reads):
         read = random_dna_seq(read_length)
@@ -284,11 +354,37 @@ def main():
     #print(reads)
 
     clusters = []
-    khulls = KHulls(2, clusters, points, reads)
+    khulls = KHulls(3, clusters, points, reads)
     
     #khulls.run_str_based()
     khulls.run_CH_based()
 
+    '''
+   
+    reads, labels = get_HC_reads(data_file)
+    encodings = []
+
+    for i in range(len(reads)):
+        encodings.append(dna2vec(reads[i]))
+
+    df_encodings = pd.DataFrame(encodings)
+    
+    
+    r = PCA_2(df_encodings)
+    points = r["pca"]
+    memberships = []
+    reads = np.array(reads)
+    khulls = KHulls(6, memberships, points, reads)
+    khulls.run_CH_based(labels)
+    
+
+    '''
+    r = PCA_3(df_encodings)
+    vec_save(r['pca'], 'out.vec')
+    ch3d = ConvexHull(r["pca"])
+    visualize_ch3d(ch3d, r["pca"])
+    '''
+   
 
 if __name__ == "__main__":
     main()
