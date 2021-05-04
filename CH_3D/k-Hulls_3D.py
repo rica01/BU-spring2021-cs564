@@ -1,7 +1,11 @@
 
 import sys
-
+import os
 sys.path.insert(0, "../lib")
+
+import pathlib
+
+
 
 from pprint import pprint
 from scipy.spatial import ConvexHull, convex_hull_plot_2d
@@ -18,14 +22,15 @@ from shapely.geometry import Polygon
 
 
 class KHulls:
-    def __init__(self, k, C, points, reads):
+    def __init__(self, k, C, points, reads, data_file):
         self.k = k  # number of clusters
         self.memberships = C
         self.points = points
         self.reads = reads
+        self.data_file=data_file
 
-    def set_k(k):
-        self.k = k
+    # def set_k(k):
+    #     self.k = k
 
     def run_CH_based(self, labels):
         read_length = len(self.reads[0])
@@ -360,7 +365,7 @@ class KHulls:
             if change == 0:
                 break
 
-        print(memberships)
+        # print(memberships)
         self.memberships = memberships
 
         # # Partitioning the point set
@@ -394,31 +399,10 @@ class KHulls:
                     alphahull=0
                 )
             )
-            # filename = "ch_" + str(i)
-            # # temp_graham.ch_plot(temp_convex_hull, filename, colors[i])
 
-            # n = temp_convex_hull.shape[0]
-            # for k in range(0, n - 1):
-            #     x = [temp_convex_hull[k][0], temp_convex_hull[k + 1][0]]
-            #     y = [temp_convex_hull[k][1], temp_convex_hull[k + 1][1]]
-            #     z = [temp_convex_hull[k][2], temp_convex_hull[k + 1][2]]
-            #     # ax.plot(x, y, z, colors[i])
-            #     # print(temp_convex_hull[i:i+2][0], temp_convex_hull[i:i+2][1])
-
-            # # Last line connecting index 0 to n-1
-            # x = [temp_convex_hull[0][0], temp_convex_hull[n - 1][0]]
-            # y = [temp_convex_hull[0][1], temp_convex_hull[n - 1][1]]
-            # z = [temp_convex_hull[0][2], temp_convex_hull[n - 1][2]]
-            # # print(x, y)
-            # # ax.plot(x, y, z, colors[i])
-
-        # plt.scatter(self.points[:, 0], self.points[:, 1],
-        #             c=memberships, s=20, cmap='viridis')
-
-
-        
-        # plt.legend()
+        fig.update(layout_showlegend=False)
         fig.show()
+        fig.write_image("./figs/ch3d_k"+str(self.k)+"_"+os.path.basename(self.data_file)+".png")
 
         return
 
@@ -475,9 +459,18 @@ def get_sim_reads(inputfile):
 def main():
 
     data_file = sys.argv[1]
+    k = int(sys.argv[2])
 
-    # reads, labels = get_HC_reads(data_file)
-    reads, labels = get_sim_reads(data_file)
+    path = pathlib.Path(data_file)
+
+    reads = []
+    labels = []
+    if path.suffix == ".txt":
+        reads, labels = get_HC_reads(data_file)
+    else:
+        reads, labels = get_sim_reads(data_file)
+    
+    
     encodings = []
 
     for i in range(len(reads)):
@@ -489,7 +482,10 @@ def main():
     points = r["pca"]
     memberships = []
     reads = np.array(reads)
-    khulls = KHulls(6, memberships, points, reads)
+
+
+
+    khulls = KHulls(k, memberships, points, reads, data_file)
     khulls.run_CH_based_3D(labels)
 
 
