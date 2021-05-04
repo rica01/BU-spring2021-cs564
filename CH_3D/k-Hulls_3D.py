@@ -402,6 +402,7 @@ class KHulls:
 
         fig.update(layout_showlegend=False)
         fig.show()
+        
         fig.write_image("./figs/ch3d_k"+str(self.k)+"_"+os.path.basename(self.data_file)+".png")
 
         return

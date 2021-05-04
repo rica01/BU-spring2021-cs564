@@ -274,7 +274,7 @@ class KHulls:
         #plt.plot(self.points[seeds[1]][0], self.points[seeds[1]][1], 'r*')
         #plt.plot(self.points[seeds[2]][0], self.points[seeds[2]][1], 'r*')
         #plt.plot(self.points[seeds[3]][0], self.points[seeds[3]][1], 'r*')
-
+        
         plt.show()
 
         # TODO: approaches to try for possible biological meaning:
@@ -394,7 +394,10 @@ def main():
     points = r["pca"]
     memberships = []
     reads = np.array(reads)
-    khulls = KHulls(4, memberships, points, reads)
+
+
+    khulls = KHulls(int(sys.argv[2]), memberships, points, reads)
+    
     khulls.run_CH_based(labels)
    
 
