@@ -59,17 +59,16 @@ class GrahamsScan:
 
 
     def quickSort(self, subpoints, low, high):
-        if subpoints.shape[0] == 1:
+        if subpoints.shape[0] <= 1:
             return subpoints
 
-        if (low < high):
+        elif (low < high):
             pi = self.partition(subpoints, low, high)
             self.quickSort(subpoints, low, pi-1)
             self.quickSort(subpoints, pi+1, high)
 
 
     # Code 3.5: O'Rourke (82)
-    # points should be global
     def compare(self, p_i, p_j, p_i_index, p_j_index):
         area = self.calc_area(self.points[0], p_i, p_j)  # pi < pj if Area2(p0, pi, pj) > 0
         if area > 0:
@@ -116,7 +115,7 @@ class GrahamsScan:
         self.points[0][1], self.points[m][1] = self.points[m][1], self.points[0][1]
 
 
-    # Code 3.8 :  O'Rourke (p84)
+    # Code 3.8 : O'Rourke (p84)
     # difference = this creates a new set, rather than changing the original point set
     def squash(self):
         i = 0

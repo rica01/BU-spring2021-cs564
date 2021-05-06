@@ -12,20 +12,19 @@ import numpy as np
 from shapely.geometry import Polygon
 
 
-
-
 class KHulls:
 
-    def __init__(self, k, C, points, reads):
+    def __init__(self, k, points, reads):
         self.k = k  # number of clusters
-        self.memberships = C
         self.points = points
         self.reads = reads
+        self.memberships = []
+        self.member_groups = []
 
     def set_k(k):
         self.k = k
 
-    def run_str_based(self):
+    def run_str_based(self, labels):
         read_length = len(self.reads[0])
         num_reads = self.reads.shape[0]
         memberships = np.full(num_reads, -1)
@@ -80,8 +79,6 @@ class KHulls:
                 memberships[seeds[i]] = seeds[i]
                 i = i + 1
 
-        print(memberships)
-
         while True:
             change = 0
             for i in range(0, num_reads):
@@ -104,40 +101,18 @@ class KHulls:
                 break
 
         print(memberships)
-
-        print("ch_str = ", ch_str)
-        print("min_cc = ", seeds[0], min_cc)
-        print("second seed_id = ", seeds[1])
-
-        '''
-        for i in range(0, num_reads):
-            if memberships[i] == seeds[0]:
-                plt.plot(self.points[i][0], self.points[i][1], 'ro')
-            else:
-                plt.plot(self.points[i][0], self.points[i][1], 'rx')
-        plt.scatter(
-            self.points[seeds[0]][0], self.points[seeds[0]][1], c='black', s=200, alpha=0.5)
-        plt.scatter(
-            self.points[seeds[1]][0], self.points[seeds[1]][1], c='black', s=200, alpha=0.5)
-        '''
+        self.memberships = memberships
 
         plt.scatter(self.points[:, 0], self.points[:, 1],
                     c=memberships, s=50, cmap='viridis')
-        #plt.plot(self.points[:, 0], self.points[:, 1], 'o')
+        for i, txt in enumerate(labels):
+            plt.annotate(txt, (self.points[i][0], self.points[i][1]))
         plt.plot(self.points[seeds[0]][0], self.points[seeds[0]][1], 'ro')
         plt.plot(self.points[seeds[1]][0], self.points[seeds[1]][1], 'rx')
         plt.show()
 
-    def color_labels(self, labels):
-        l_colors = {'A': 'tab:blue', 'B': 'green',
-                    'K': 'blue', 'V': 'yellow', 'L': 'tab.orange', 'P': 'tab:olive'}
-        
-        for label in np.unique(labels):
-            cond = np.where(label)
-            plt.plot(self.points[cond][0], self.points[cond][1], c=l_colors[label], label=label, s=20)
 
-
-    def run_CH_based(self, labels):
+    def run_CH_based(self):
         read_length = len(self.reads[0])
         num_reads = self.reads.shape[0]
         memberships = np.full(num_reads, -1)
@@ -240,7 +215,7 @@ class KHulls:
                 break
 
         print(memberships)
-        self.memberships = np.array(memberships)
+        self.memberships = memberships
 
         # Partitioning the point set
         subpoints = []
@@ -254,90 +229,12 @@ class KHulls:
                     subpoints[j].append(self.points[i])
                 j = j + 1
 
-        # Forming individual convex hulls --> TODO: define color palette for k > 6
-        colors = ['c-', 'm-', 'y-', 'k-', 'r-', 'b-']
-        for i in range(0, self.k):
-            subpoints[i] = np.array(subpoints[i])
-            temp_graham = GrahamsScan(subpoints[i])
-            temp_convex_hull = temp_graham.run()
-            filename = "ch_" + str(i)
-            temp_graham.ch_plot(temp_convex_hull, filename, colors[i])
+        self.member_groups = subpoints
 
-        # Plotting 
-        #self.color_labels(labels)
-        plt.scatter(self.points[:, 0], self.points[:, 1], c=memberships, s=20, cmap='viridis')
-        # annotating the points
-        #for i, txt in enumerate(labels):
-           #plt.annotate(txt, (self.points[i][0], self.points[i][1]))
-
-        #plt.plot(self.points[seeds[0]][0], self.points[seeds[0]][1], 'r*')
-        #plt.plot(self.points[seeds[1]][0], self.points[seeds[1]][1], 'r*')
-        #plt.plot(self.points[seeds[2]][0], self.points[seeds[2]][1], 'r*')
-        #plt.plot(self.points[seeds[3]][0], self.points[seeds[3]][1], 'r*')
-        
-        plt.show()
-
-        # TODO: approaches to try for possible biological meaning:
-        # - use closeness_centrality instead of centroid
-        # - incorporate hamming distance in proximity calculations
-        # -
-
-
-def get_sim_reads(inputfile):
-    file1 = open(inputfile, 'r')
-    lines = file1.readlines()
-
-    labels = []
-    reads = []
-    count = 0
-    for line in lines:
-        if count % 2 == 1:
-            reads.append(line.strip())
-        count += 1
-
-    return reads, labels
-
-
-# Returns the lists of reads and labels.
-# dataset-specific for Hepatitis C data from David Campo 
-def get_HC_reads(inputfile):
-    file1 = open(inputfile, 'r')
-    lines = file1.readlines()
-    
-    reads = []
-    labels = []
-
-    read_length = -1
-    count = 0
-    read = ""
-    for line in lines:
-        if count == 0:
-            label = line.strip()
-            labels.append(label[1])
-        elif count <= 4:
-            subread = line.strip()
-            read = read + subread
-            #print("'", read, "'--", read[0], "--")
-            if count == 4:
-                if read_length == -1:
-                    read_length = len(read)
-                    reads.append(read)
-                elif len(read) == read_length:
-                    reads.append(read)
-                else:
-                    labels.pop(1)
-                read = ""
-                count = -1
-        count += 1
-    
-    return reads, labels
-
+'''
 
 def main():
 
-    data_file = sys.argv[1]
-
-    '''
     reads = []
     
     reads.append("AAAAACCCC")
@@ -354,25 +251,18 @@ def main():
     reads.append("ACAAATTTT")
     reads.append("AGAAATTTT")
     reads.append("ATAAATTTT")
-    '''
-
-    '''
 
     encodings = []
     read_length = 9
-    num_reads = 100
-    tags = ['C', 'C', 'C', 'C', 'G', 'G', 'G', 'G', 'T', 'T', 'T', 'T']
+    labels = ['C', 'C', 'C', 'C', 'G', 'G', 'G', 'G', 'T', 'T', 'T', 'T']
 
-    for i in range(num_reads):
-        read = random_dna_seq(read_length)
-        reads.append(read)
-        encodings.append(dna2vec(read))
+    for i in range(len(reads)):
+        encodings.append(dna2vec(reads[i]))
 
     df_encodings = pd.DataFrame(encodings)
     reads = np.array(reads)
     r = PCA_2(df_encodings)
     points = r["pca"]
-    #print(reads)
 
     clusters = []
     khulls = KHulls(3, clusters, points, reads)
@@ -380,26 +270,7 @@ def main():
     #khulls.run_str_based()
     khulls.run_CH_based()
 
-    '''
-   
-    reads, labels = get_HC_reads(data_file)
-    #reads, labels = get_sim_reads(data_file)
-    encodings = []
-
-    for i in range(len(reads)):
-        encodings.append(dna2vec(reads[i]))
-
-    df_encodings = pd.DataFrame(encodings)
-    r = PCA_2(df_encodings)
-    points = r["pca"]
-    memberships = []
-    reads = np.array(reads)
-
-
-    khulls = KHulls(int(sys.argv[2]), memberships, points, reads)
-    
-    khulls.run_CH_based(labels)
-   
-
 if __name__ == "__main__":
     main()
+
+'''
