@@ -1,4 +1,4 @@
-# Similarity Analysis of Genomic SequencesUsing Convex Hull in Hamming Space
+# Similarity Analysis of Genomic Sequences Using Convex Hull in Hamming Space
 
 Zülal Bingöl - 21301083 - zulal.bingol@bilkent.edu.tr
 
