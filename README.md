@@ -7,7 +7,7 @@ Ricardo Román-Brenes - 22001125 - ricardo@bilkent.edu.tr
 
 
 
-In this project, we  developed a procedure for similarity comparison and clustering of genomic sequences using convex hulls in Hamming space. Our project is based on the research done by Campo and Khudyakov in 2020., which uses a novel clustering algorithm, *k-hulls*, for improving the Convex Hull Distance algorithm on heterogeneous data.
+In the present project, we  developed a procedure for similarity comparison and clustering of genomic sequences using convex hulls in Hamming space. Our project is based on the research done by Campo and Khudyakov in 2020., which uses a novel clustering algorithm, *k-hulls*, for improving the Convex Hull Distance algorithm on heterogeneous data.
 
 
 
